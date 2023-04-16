@@ -202,15 +202,15 @@ static long kvmfr_dmabuf_create(struct kvmfr_dev * kdev, struct file * filp,
       (create.offset + create.size < create.offset))
     return -EINVAL;
 
-  kbuf = kzalloc(sizeof(struct kvmfrbuf), GFP_KERNEL);
+  kbuf = devm_kzalloc(kdev->pDev, sizeof(struct kvmfrbuf), GFP_KERNEL);
   if (!kbuf)
     return -ENOMEM;
 
   kbuf->kdev      = kdev;
   kbuf->pagecount = create.size >> PAGE_SHIFT;
   kbuf->offset    = create.offset;
-  kbuf->pages     = kmalloc_array(kbuf->pagecount, sizeof(*kbuf->pages),
-      GFP_KERNEL);
+  kbuf->pages     = devm_kmalloc_array(kdev->pDev, kbuf->pagecount,
+      sizeof(*kbuf->pages), GFP_KERNEL);
   if (!kbuf->pages)
   {
     ret = -ENOMEM;
@@ -255,8 +255,8 @@ static long kvmfr_dmabuf_create(struct kvmfr_dev * kdev, struct file * filp,
   return dma_buf_fd(buf, create.flags & KVMFR_DMABUF_FLAG_CLOEXEC ? O_CLOEXEC : 0);
 
 err:
-  kfree(kbuf->pages);
-  kfree(kbuf);
+  devm_kfree(kdev->pDev, kbuf->pages);
+  devm_kfree(kdev->pDev, kbuf);
   return ret;
 }
 
@@ -344,7 +344,7 @@ static int kvmfr_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
   struct kvmfr_dev *kdev;
 
-  kdev = kzalloc(sizeof(struct kvmfr_dev), GFP_KERNEL);
+  kdev = devm_kzalloc(dev->dev, sizeof(struct kvmfr_dev), GFP_KERNEL);
   if (!kdev)
   {
     printk(KERN_INFO "kvmfr: kvmfr_pci_probe: failed to allocate memory!\n");
@@ -431,7 +431,7 @@ out_release:
 out_disable:
   pci_disable_device(dev);
 out_free:
-  kfree(kdev);
+  devm_kfree(dev->dev, kdev);
   return -ENODEV;
 }
 
@@ -449,7 +449,7 @@ static void kvmfr_pci_remove(struct pci_dev *dev)
   pci_release_regions(dev);
   pci_disable_device(dev);
 
-  kfree(kdev);
+  devm_kfree(dev->dev, kdev);
 }
 
 static struct pci_device_id kvmfr_pci_ids[] =
