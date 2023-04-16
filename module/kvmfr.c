@@ -351,7 +351,7 @@ static int kvmfr_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
     return -ENOMEM;
   }
 
-  if (pci_enable_device(dev))
+  if (pcim_enable_device(dev))
   {
     printk(KERN_INFO "kvmfr: kvmfr_pci_probe: failed to enable device!\n");
     goto out_free;
