@@ -344,7 +344,7 @@ static int kvmfr_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 {
   struct kvmfr_dev *kdev;
 
-  kdev = devm_kzalloc(dev->dev, sizeof(struct kvmfr_dev), GFP_KERNEL);
+  kdev = devm_kzalloc(&dev->dev, sizeof(struct kvmfr_dev), GFP_KERNEL);
   if (!kdev)
   {
     printk(KERN_INFO "kvmfr: kvmfr_pci_probe: failed to allocate memory!\n");
@@ -431,7 +431,7 @@ out_release:
 out_disable:
   pci_disable_device(dev);
 out_free:
-  devm_kfree(dev->dev, kdev);
+  devm_kfree(&dev->dev, kdev);
   return -ENODEV;
 }
 
@@ -449,7 +449,7 @@ static void kvmfr_pci_remove(struct pci_dev *dev)
   pci_release_regions(dev);
   pci_disable_device(dev);
 
-  devm_kfree(dev->dev, kdev);
+  devm_kfree(&dev->dev, kdev);
 }
 
 static struct pci_device_id kvmfr_pci_ids[] =
